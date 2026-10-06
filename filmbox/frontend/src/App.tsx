@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bell,
   BookmarkSimple,
@@ -10,7 +10,6 @@ import {
   MagnifyingGlass,
   Play,
   Plus,
-  SlidersHorizontal,
   Star,
   TrendUp,
   UsersThree,
@@ -37,6 +36,19 @@ function App() {
   const [savedFilms, setSavedFilms] = useState<number[]>([20, 28])
   const [selectedFilm, setSelectedFilm] = useState<Film | null>(null)
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedFilm(null)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [])
+
+  const scrollTo = (selector: string, label: string) => {
+    setActiveNav(label)
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const filteredFilms = useMemo(() => {
     const normalizedQuery = query.toLowerCase().trim()
@@ -68,7 +80,7 @@ function App() {
         <nav className="main-nav" aria-label="Navigation principale">
           <p className="nav-label">Explorer</p>
           {navItems.map(({ label, icon: Icon }) => (
-            <button className={`nav-item ${activeNav === label ? 'active' : ''}`} key={label} onClick={() => setActiveNav(label)}>
+            <button className={`nav-item ${activeNav === label ? 'active' : ''}`} key={label} onClick={() => scrollTo(label === 'Accueil' ? '.intro-row' : label === 'Catalogue' ? '.catalogue-toolbar' : label === 'Membres' ? '.activity-panel' : '.trend-panel', label)} aria-current={activeNav === label ? 'page' : undefined}>
               <Icon size={19} weight={activeNav === label ? 'fill' : 'regular'} />
               <span>{label}</span>
               {label === 'Tendances' && <span className="nav-pulse" />}
@@ -78,8 +90,8 @@ function App() {
         <div className="sidebar-rule" />
         <nav className="main-nav" aria-label="Votre espace">
           <p className="nav-label">Votre espace</p>
-          <button className="nav-item"><BookmarkSimple size={19} /><span>Ma sélection</span><span className="nav-count">{savedFilms.length}</span></button>
-          <button className="nav-item"><ChartLineUp size={19} /><span>Mon activité</span></button>
+          <button className="nav-item" onClick={() => scrollTo('.catalogue-grid', 'Ma sélection')}><BookmarkSimple size={19} /><span>Ma sélection</span><span className="nav-count">{savedFilms.length}</span></button>
+          <button className="nav-item" onClick={() => scrollTo('.activity-panel', 'Mon activité')}><ChartLineUp size={19} /><span>Mon activité</span></button>
         </nav>
         <div className="sidebar-footer">
           <div className="mini-avatar">C9</div>
@@ -93,7 +105,7 @@ function App() {
           <div className="mobile-brand"><div className="brand-mark"><FilmSlate size={19} weight="fill" /></div><span>filmbox</span></div>
           <div className="breadcrumb"><span>Le cercle cinéma</span><span className="breadcrumb-slash">/</span><strong>{activeNav}</strong></div>
           <div className="topbar-actions">
-            <button className="icon-button" aria-label="Notifications"><Bell size={19} /><span className="notification-dot" /></button>
+            <button className="icon-button" aria-label="Notifications" onClick={() => setNotice('Aucune nouvelle notification')}><Bell size={19} /><span className="notification-dot" /></button>
             <div className="profile-chip"><div className="mini-avatar">C9</div><span>cinephile_92</span><CaretDown size={13} /></div>
           </div>
         </header>
@@ -124,23 +136,22 @@ function App() {
           </section>
 
           <section className="metrics-grid" aria-label="Statistiques FilmBox">
-            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>30</strong><span className="metric-change positive">+4 ce mois</span></div>
-            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>159</strong><span className="metric-change positive">+12 cette semaine</span></div>
-            <div className="metric"><span className="metric-label">Films regardés</span><strong>208</strong><span className="metric-change neutral">8 membres actifs</span></div>
+            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>30</strong><span className="metric-change positive">snapshot SQL</span></div>
+            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>159</strong><span className="metric-change positive">snapshot SQL</span></div>
+            <div className="metric"><span className="metric-label">Visionnages</span><strong>208</strong><span className="metric-change neutral">8 membres actifs</span></div>
             <div className="metric metric-accent"><span className="metric-label">Genre favori</span><strong>SF</strong><span className="metric-change accent-text">38 notes • 4.08 moy.</span></div>
           </section>
 
           <section className="section-heading">
             <div><p className="eyebrow">LE CATALOGUE</p><h2>À revoir, à découvrir.</h2></div>
-            <button className="text-button" onClick={() => setActiveNav('Catalogue')}>Voir tout <span>↗</span></button>
+            <button className="text-button" onClick={() => scrollTo('.catalogue-toolbar', 'Catalogue')}>Voir tout <span>↗</span></button>
           </section>
 
           <section className="catalogue-toolbar">
             <label className="search-field"><MagnifyingGlass size={18} /><input aria-label="Rechercher un film" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Titre, réalisateur, tag..." /><kbd>⌘ K</kbd></label>
             <div className="genre-filter" role="group" aria-label="Filtrer par genre">
-              {genres.map((genre) => <button key={genre} className={activeGenre === genre ? 'selected' : ''} onClick={() => setActiveGenre(genre)}>{genre}</button>)}
+              {genres.map((genre) => <button key={genre} className={activeGenre === genre ? 'selected' : ''} onClick={() => setActiveGenre(genre)} aria-pressed={activeGenre === genre}>{genre}</button>)}
             </div>
-            <button className="filter-button" aria-label="Filtres avancés"><SlidersHorizontal size={18} /></button>
           </section>
 
           <section className="catalogue-grid">
@@ -150,7 +161,7 @@ function App() {
 
           <section className="bottom-grid">
             <div className="activity-panel">
-              <div className="panel-heading"><div><p className="eyebrow">EN DIRECT</p><h2>Derniers mouvements</h2></div><button className="icon-button subtle" aria-label="Ouvrir l'activité"><span>↗</span></button></div>
+              <div className="panel-heading"><div><p className="eyebrow">EN DIRECT</p><h2>Derniers mouvements</h2></div><button className="icon-button subtle" aria-label="Revenir aux mouvements" onClick={() => scrollTo('.activity-panel', 'Mon activité')}><span>↗</span></button></div>
               <div className="activity-list">{activity.map((item) => <div className="activity-item" key={`${item.member}-${item.film}`}><div className="activity-avatar">{item.member.slice(0, 2).toUpperCase()}</div><p><strong>{item.member}</strong> {item.action} <b>{item.film}</b><span>{item.time}</span></p>{item.score !== '—' && <span className="activity-score"><Star size={12} weight="fill" /> {item.score}</span>}</div>)}</div>
             </div>
             <div className="trend-panel"><div className="panel-heading"><div><p className="eyebrow">CE QUI MONTE</p><h2>Tendances du cercle</h2></div><TrendUp size={22} className="trend-icon" /></div><div className="trend-chart"><div className="chart-line"><span style={{ height: '36%' }} /><span style={{ height: '54%' }} /><span style={{ height: '47%' }} /><span style={{ height: '68%' }} /><span style={{ height: '59%' }} /><span style={{ height: '84%' }} /><span style={{ height: '72%' }} /><span style={{ height: '96%' }} /></div><div className="chart-caption"><span>sept. 01</span><strong>+23% de visionnages</strong><span>sept. 30</span></div></div></div>
