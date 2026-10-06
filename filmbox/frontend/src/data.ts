@@ -94,10 +94,10 @@ export const films: Film[] = [
 ]
 
 export const activity = [
-  { member: 'cinephile_92', action: 'a noté', film: 'X-Men : Le Commencement', time: 'il y a 12 min', score: '4.5' },
-  { member: 'darkroom', action: 'a revu', film: 'The Dark Knight', time: 'il y a 2 h', score: '—' },
-  { member: 'bobine', action: 'a ajouté à sa liste', film: 'Le Fabuleux Destin d’Amélie Poulain', time: 'hier', score: '—' },
-  { member: 'lea.reel', action: 'a noté', film: 'Inception', time: 'hier', score: '5.0' },
+  { member: 'cinephile_92', action: 'a regardé', film: 'X-Men : Le Commencement', date: '2026-09-16', score: '—' },
+  { member: 'darkroom', action: 'a regardé', film: 'The Dark Knight', date: '2026-09-12', score: '—' },
+  { member: 'bobine', action: 'a regardé', film: 'Le Fabuleux Destin d’Amélie Poulain', date: '2026-09-12', score: '—' },
+  { member: 'lea.reel', action: 'a noté', film: 'Inception', date: '2026-02-17', score: '5.0' },
 ]
 
 export const genres = ['Tous', 'Science-fiction', 'Action', 'Thriller', 'Drame']

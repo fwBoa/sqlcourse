@@ -137,12 +137,14 @@ kbd { color: var(--subtle); border: 1px solid var(--line); border-radius: 4px; p
 .activity-item p span { display: block; color: var(--subtle); font: 500 9px var(--font-ui); }
 .activity-score { display: inline-flex; align-items: center; gap: 3px; color: var(--accent); font: 600 10px var(--font-ui); }
 .trend-icon { color: var(--accent); }
-.trend-chart { position: relative; height: 150px; margin-top: 27px; border-bottom: 1px solid var(--line-strong); background: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, rgba(255,255,255,.045) 36px); }
-.chart-line { position: absolute; inset: 0 5px 0; display: flex; align-items: end; gap: 8px; padding-bottom: 0; }
-.chart-line::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); clip-path: polygon(0 88%, 14% 70%, 28% 77%, 42% 49%, 57% 61%, 71% 29%, 85% 42%, 100% 4%, 100% 10%, 85% 49%, 71% 36%, 57% 68%, 42% 56%, 28% 84%, 14% 77%, 0 95%); }
-.chart-line span { flex: 1; border-radius: 3px 3px 0 0; background: rgba(215,243,106,.13); }
-.chart-caption { position: absolute; right: 0; bottom: -29px; left: 0; display: flex; justify-content: space-between; color: var(--subtle); font: 500 9px var(--font-ui); }
-.chart-caption strong { color: var(--accent); font-weight: 400; }
+.trend-list { display: grid; gap: 0; margin-top: 19px; }
+.trend-item { display: flex; align-items: center; gap: 11px; min-height: 58px; border-top: 1px solid var(--line); }
+.trend-rank { width: 22px; color: var(--subtle); font-size: 11px; }
+.trend-item div { flex: 1; min-width: 0; }
+.trend-item strong, .trend-item span { display: block; }
+.trend-item strong { overflow: hidden; color: var(--text); font-size: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.trend-item span { margin-top: 4px; color: var(--subtle); font-size: 10px; }
+.trend-item b { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-size: 11px; font-weight: 500; }
 .modal-backdrop { position: fixed; z-index: 10; inset: 0; display: flex; justify-content: flex-end; background: rgba(4,6,5,.67); backdrop-filter: blur(5px); }
 .film-drawer { position: relative; width: min(440px, 100%); overflow-y: auto; border-left: 1px solid var(--line-strong); background: #181c19; box-shadow: -25px 0 60px rgba(0,0,0,.2); animation: drawer-in .32s cubic-bezier(.2,.8,.2,1); }
 @keyframes drawer-in { from { transform: translateX(100%); opacity: .6; } to { transform: translateX(0); opacity: 1; } }
