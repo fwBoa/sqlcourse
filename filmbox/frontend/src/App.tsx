@@ -120,7 +120,7 @@ function App() {
           </section>
 
           <section className="hero-feature" aria-label="Film à l'affiche">
-            <div className="hero-art" />
+            <div className="hero-art" style={{ backgroundImage: `url(${films[0].poster})` }}><span>INCEPTION</span><small>2010 / 02—28</small></div>
             <div className="hero-overlay" />
             <div className="hero-content">
               <div className="hero-kicker"><span className="status-dot" /> À l’affiche cette semaine</div>
@@ -136,14 +136,14 @@ function App() {
           </section>
 
           <section className="metrics-grid" aria-label="Statistiques FilmBox">
-            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>30</strong><span className="metric-change positive">snapshot SQL</span></div>
-            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>159</strong><span className="metric-change positive">snapshot SQL</span></div>
-            <div className="metric"><span className="metric-label">Visionnages</span><strong>208</strong><span className="metric-change neutral">8 membres actifs</span></div>
+            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>30</strong><span className="metric-change positive">dans votre catalogue</span></div>
+            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>159</strong><span className="metric-change positive">par 8 membres</span></div>
+            <div className="metric"><span className="metric-label">Visionnages</span><strong>208</strong><span className="metric-change neutral">dans le journal</span></div>
             <div className="metric metric-accent"><span className="metric-label">Genre favori</span><strong>SF</strong><span className="metric-change accent-text">38 notes • 4.08 moy.</span></div>
           </section>
 
           <section className="section-heading">
-            <div><p className="eyebrow">LE CATALOGUE</p><h2>À revoir, à découvrir.</h2></div>
+            <div><h2>À revoir, à découvrir.</h2></div>
             <button className="text-button" onClick={() => scrollTo('.catalogue-toolbar', 'Catalogue')}>Voir tout <span>↗</span></button>
           </section>
 
@@ -161,22 +161,22 @@ function App() {
 
           <section className="bottom-grid">
             <div className="activity-panel">
-              <div className="panel-heading"><div><p className="eyebrow">SNAPSHOT SQL</p><h2>Dernières activités</h2></div><button className="icon-button subtle" aria-label="Revenir aux mouvements" onClick={() => scrollTo('.activity-panel', 'Mon activité')}><span>↗</span></button></div>
+              <div className="panel-heading"><div><h2>Activité récente</h2></div><button className="icon-button subtle" aria-label="Revenir aux mouvements" onClick={() => scrollTo('.activity-panel', 'Mon activité')}><span>↗</span></button></div>
               <div className="activity-list">{activity.map((item) => <div className="activity-item" key={`${item.member}-${item.film}`}><div className="activity-avatar">{item.member.slice(0, 2).toUpperCase()}</div><p><strong>{item.member}</strong> {item.action} <b>{item.film}</b><span>{item.date}</span></p>{item.score !== '—' && <span className="activity-score"><Star size={12} weight="fill" /> {item.score}</span>}</div>)}</div>
             </div>
-            <div className="trend-panel"><div className="panel-heading"><div><p className="eyebrow">NOTES DU CATALOGUE</p><h2>Les mieux notés</h2></div><TrendUp size={22} className="trend-icon" /></div><div className="trend-list">{[...films].sort((first, second) => second.rating - first.rating).slice(0, 3).map((film, index) => <div className="trend-item" key={film.id}><span className="trend-rank">0{index + 1}</span><div><strong>{film.title}</strong><span>{film.votes} notes · {film.genre}</span></div><b><Star size={12} weight="fill" /> {film.rating.toFixed(2)}</b></div>)}</div></div>
+            <div className="trend-panel"><div className="panel-heading"><div><h2>Les mieux notés</h2></div><TrendUp size={22} className="trend-icon" /></div><div className="trend-list">{[...films].sort((first, second) => second.rating - first.rating).slice(0, 3).map((film, index) => <div className="trend-item" key={film.id}><span className="trend-rank">0{index + 1}</span><div><strong>{film.title}</strong><span>{film.votes} notes · {film.genre}</span></div><b><Star size={12} weight="fill" /> {film.rating.toFixed(2)}</b></div>)}</div></div>
           </section>
         </div>
       </main>
 
-      {selectedFilm && <div className="modal-backdrop" role="presentation" onClick={() => setSelectedFilm(null)}><aside className="film-drawer" role="dialog" aria-modal="true" aria-label={`Fiche de ${selectedFilm.title}`} onClick={(event) => event.stopPropagation()}><button className="drawer-close icon-button" onClick={() => setSelectedFilm(null)} aria-label="Fermer"><X size={20} /></button><div className={`drawer-poster ${selectedFilm.tone}`} style={{ backgroundImage: `url(${selectedFilm.poster})` }}><span>{selectedFilm.year}</span></div><div className="drawer-body"><div className="drawer-title-row"><div><p className="eyebrow">FICHE FILM</p><h2>{selectedFilm.title}</h2></div><div className="drawer-score"><Star size={16} weight="fill" />{selectedFilm.rating.toFixed(2)}</div></div><p className="drawer-meta">{selectedFilm.director} <span>•</span> {selectedFilm.year} <span>•</span> {formatDuration(selectedFilm.duration)}</p><p className="drawer-description">Un film du catalogue FilmBox, suivi par {selectedFilm.votes} membres du cercle. Retrouvez vos notes et vos tags dans la fiche enrichie.</p><div className="tag-row">{selectedFilm.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div><button className="primary-button full-button" onClick={() => toggleSaved(selectedFilm.id)}>{savedFilms.includes(selectedFilm.id) ? <Check size={17} /> : <Plus size={17} />} {savedFilms.includes(selectedFilm.id) ? 'Dans ma sélection' : 'Ajouter à ma sélection'}</button></div></aside></div>}
+      {selectedFilm && <div className="modal-backdrop" role="presentation" onClick={() => setSelectedFilm(null)}><aside className="film-drawer" role="dialog" aria-modal="true" aria-label={`Fiche de ${selectedFilm.title}`} onClick={(event) => event.stopPropagation()}><button className="drawer-close icon-button" onClick={() => setSelectedFilm(null)} aria-label="Fermer"><X size={20} /></button><div className={`drawer-poster ${selectedFilm.tone}`} style={{ backgroundImage: `url(${selectedFilm.poster})` }}><strong>{selectedFilm.title}</strong><span>{selectedFilm.year}</span></div><div className="drawer-body"><div className="drawer-title-row"><div><h2>{selectedFilm.title}</h2></div><div className="drawer-score"><Star size={16} weight="fill" />{selectedFilm.rating.toFixed(2)}</div></div><p className="drawer-meta">{selectedFilm.director} <span>•</span> {selectedFilm.year} <span>•</span> {formatDuration(selectedFilm.duration)}</p><p className="drawer-description">Un film du catalogue FilmBox, suivi par {selectedFilm.votes} membres du cercle. Retrouvez vos notes et vos tags dans la fiche enrichie.</p><div className="tag-row">{selectedFilm.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div><button className="primary-button full-button" onClick={() => toggleSaved(selectedFilm.id)}>{savedFilms.includes(selectedFilm.id) ? <Check size={17} /> : <Plus size={17} />} {savedFilms.includes(selectedFilm.id) ? 'Dans ma sélection' : 'Ajouter à ma sélection'}</button></div></aside></div>}
       {notice && <div className="toast"><Check size={16} weight="bold" />{notice}</div>}
     </div>
   )
 }
 
 function FilmCard({ film, saved, onSave, onOpen }: { film: Film; saved: boolean; onSave: () => void; onOpen: () => void }) {
-  return <article className="film-card"><button className={`poster ${film.tone}`} style={{ backgroundImage: `url(${film.poster})` }} onClick={onOpen} aria-label={`Ouvrir la fiche de ${film.title}`}><span className="poster-year">{film.year}</span><span className="poster-overlay"><Play size={22} weight="fill" /></span></button><div className="film-card-body"><div className="film-card-title"><div><h3>{film.title}</h3><p>{film.director}</p></div><button className={`save-button ${saved ? 'saved' : ''}`} onClick={onSave} aria-label={saved ? `Retirer ${film.title} de la sélection` : `Ajouter ${film.title} à la sélection`}><BookmarkSimple size={18} weight={saved ? 'fill' : 'regular'} /></button></div><div className="film-card-meta"><span>{film.genre}</span><span className="film-rating"><Star size={13} weight="fill" />{film.rating.toFixed(2)}</span></div></div></article>
+  return <article className="film-card"><button className={`poster ${film.tone}`} style={{ backgroundImage: `url(${film.poster})` }} onClick={onOpen} aria-label={`Ouvrir la fiche de ${film.title}`}><span className="poster-art-title">{film.title}</span><span className="poster-year">{film.year}</span><span className="poster-overlay"><Play size={22} weight="fill" /></span></button><div className="film-card-body"><div className="film-card-title"><div><h3>{film.title}</h3><p>{film.director}</p></div><button className={`save-button ${saved ? 'saved' : ''}`} onClick={onSave} aria-label={saved ? `Retirer ${film.title} de la sélection` : `Ajouter ${film.title} à la sélection`}><BookmarkSimple size={18} weight={saved ? 'fill' : 'regular'} /></button></div><div className="film-card-meta"><span>{film.genre}</span><span className="film-rating"><Star size={13} weight="fill" />{film.rating.toFixed(2)}</span></div></div></article>
 }
 
 export default App
