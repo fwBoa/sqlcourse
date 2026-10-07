@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Bell,
   BookmarkSimple,
@@ -15,7 +15,8 @@ import {
   UsersThree,
   X,
 } from '@phosphor-icons/react'
-import { activity, films, genres, type Film } from './data'
+import { api } from './api'
+import type { Activity, Dashboard, Film } from './types'
 import './App.css'
 
 const navItems = [
@@ -33,9 +34,15 @@ function App() {
   const [activeNav, setActiveNav] = useState('Accueil')
   const [activeGenre, setActiveGenre] = useState('Tous')
   const [query, setQuery] = useState('')
-  const [savedFilms, setSavedFilms] = useState<number[]>([20, 28])
+  const [films, setFilms] = useState<Film[]>([])
+  const [genres, setGenres] = useState<string[]>(['Tous'])
+  const [activity, setActivity] = useState<Activity[]>([])
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null)
+  const [savedFilms, setSavedFilms] = useState<number[]>([])
   const [selectedFilm, setSelectedFilm] = useState<Film | null>(null)
   const [notice, setNotice] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -45,23 +52,43 @@ function App() {
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [])
 
+  useEffect(() => {
+    Promise.all([api.dashboard(), api.genres(), api.activity(), api.selection(), api.films('', 'Tous')])
+      .then(([nextDashboard, nextGenres, nextActivity, nextSelection, nextFilms]) => {
+        setDashboard(nextDashboard)
+        setGenres(nextGenres)
+        setActivity(nextActivity)
+        setSavedFilms(nextSelection)
+        setFilms(nextFilms)
+      })
+      .catch(() => setError('La base FilmBox est indisponible.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    if (loading) return
+    api.films(query, activeGenre)
+      .then(setFilms)
+      .catch(() => setError('Le catalogue ne répond pas.'))
+  }, [activeGenre, query, loading])
+
   const scrollTo = (selector: string, label: string) => {
     setActiveNav(label)
     document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const filteredFilms = useMemo(() => {
-    const normalizedQuery = query.toLowerCase().trim()
-    return films.filter((film) => {
-      const matchesGenre = activeGenre === 'Tous' || film.genre === activeGenre
-      const matchesQuery = !normalizedQuery || [film.title, film.director, ...film.tags].join(' ').toLowerCase().includes(normalizedQuery)
-      return matchesGenre && matchesQuery
-    })
-  }, [activeGenre, query])
+  const featuredFilm = dashboard?.featured ?? films[0]
 
-  const toggleSaved = (filmId: number) => {
-    setSavedFilms((current) => current.includes(filmId) ? current.filter((id) => id !== filmId) : [...current, filmId])
-    setNotice(savedFilms.includes(filmId) ? 'Retiré de votre sélection' : 'Ajouté à votre sélection')
+  const toggleSaved = async (filmId: number) => {
+    const selected = !savedFilms.includes(filmId)
+    setSavedFilms((current) => selected ? [...current, filmId] : current.filter((id) => id !== filmId))
+    try {
+      await api.toggleSelection(filmId, selected)
+      setNotice(selected ? 'Ajouté à votre sélection' : 'Retiré de votre sélection')
+    } catch {
+      setSavedFilms((current) => selected ? current.filter((id) => id !== filmId) : [...current, filmId])
+      setNotice('Impossible de modifier votre sélection')
+    }
     window.setTimeout(() => setNotice(''), 2200)
   }
 
@@ -111,6 +138,7 @@ function App() {
         </header>
 
         <div className="page-wrap">
+          {error && <div className="api-error" role="alert">{error} <button onClick={() => window.location.reload()}>Réessayer</button></div>}
           <section className="intro-row">
             <div>
               <p className="eyebrow">MARDI 06 OCTOBRE 2026</p>
@@ -120,26 +148,26 @@ function App() {
           </section>
 
           <section className="hero-feature" aria-label="Film à l'affiche">
-            <div className="hero-art" style={{ backgroundImage: `url(${films[0].poster})` }}><span>INCEPTION</span><small>2010 / 02—28</small></div>
+            <div className="hero-art" style={{ backgroundImage: featuredFilm?.poster ? `url(${featuredFilm.poster})` : undefined }}><span>{featuredFilm?.title ?? 'FilmBox'}</span><small>{featuredFilm ? `${featuredFilm.year} / ${formatDuration(featuredFilm.duration)}` : 'Chargement'}</small></div>
             <div className="hero-overlay" />
             <div className="hero-content">
               <div className="hero-kicker"><span className="status-dot" /> À l’affiche cette semaine</div>
-              <h2>Inception</h2>
-              <p className="hero-meta">Christopher Nolan <span>•</span> 2010 <span>•</span> 2 h 28</p>
+              <h2>{featuredFilm?.title ?? 'Chargement…'}</h2>
+              <p className="hero-meta">{featuredFilm?.director ?? 'Catalogue FilmBox'} <span>•</span> {featuredFilm?.year ?? '—'} <span>•</span> {featuredFilm ? formatDuration(featuredFilm.duration) : '—'}</p>
               <p className="hero-description">Dans les rêves, les règles changent. Un film qui continue de se déplier longtemps après le générique.</p>
               <div className="hero-actions">
-                <button className="primary-button" onClick={() => setSelectedFilm(films[0])}><Play size={17} weight="fill" /> Voir la fiche</button>
-                <button className="ghost-button" onClick={() => toggleSaved(12)}>{savedFilms.includes(12) ? <Check size={17} /> : <Plus size={17} />} {savedFilms.includes(12) ? 'Dans la sélection' : 'Ajouter à ma sélection'}</button>
+                <button className="primary-button" onClick={() => featuredFilm && setSelectedFilm(featuredFilm)} disabled={!featuredFilm}><Play size={17} weight="fill" /> Voir la fiche</button>
+                <button className="ghost-button" onClick={() => featuredFilm && toggleSaved(featuredFilm.id)} disabled={!featuredFilm}>{featuredFilm && savedFilms.includes(featuredFilm.id) ? <Check size={17} /> : <Plus size={17} />} {featuredFilm && savedFilms.includes(featuredFilm.id) ? 'Dans la sélection' : 'Ajouter à ma sélection'}</button>
               </div>
             </div>
-            <div className="hero-rating"><Star size={17} weight="fill" /><strong>4.60</strong><span>sur 5</span></div>
+            <div className="hero-rating"><Star size={17} weight="fill" /><strong>{featuredFilm?.rating.toFixed(2) ?? '—'}</strong><span>sur 5</span></div>
           </section>
 
           <section className="metrics-grid" aria-label="Statistiques FilmBox">
-            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>30</strong><span className="metric-change positive">dans votre catalogue</span></div>
-            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>159</strong><span className="metric-change positive">par 8 membres</span></div>
-            <div className="metric"><span className="metric-label">Visionnages</span><strong>208</strong><span className="metric-change neutral">dans le journal</span></div>
-            <div className="metric metric-accent"><span className="metric-label">Genre favori</span><strong>SF</strong><span className="metric-change accent-text">38 notes • 4.08 moy.</span></div>
+            <div className="metric"><span className="metric-label">Films au catalogue</span><strong>{dashboard?.filmCount ?? '—'}</strong><span className="metric-change positive">dans votre catalogue</span></div>
+            <div className="metric"><span className="metric-label">Notes du cercle</span><strong>{dashboard?.noteCount ?? '—'}</strong><span className="metric-change positive">par {dashboard?.memberCount ?? '—'} membres</span></div>
+            <div className="metric"><span className="metric-label">Visionnages</span><strong>{dashboard?.watchCount ?? '—'}</strong><span className="metric-change neutral">dans le journal</span></div>
+            <div className="metric metric-accent"><span className="metric-label">Genre favori</span><strong>{dashboard?.favoriteGenre ?? '—'}</strong><span className="metric-change accent-text">{dashboard ? `${dashboard.favoriteGenreNotes} notes • ${dashboard.favoriteGenreAverage.toFixed(2)} moy.` : '—'}</span></div>
           </section>
 
           <section className="section-heading">
@@ -155,8 +183,9 @@ function App() {
           </section>
 
           <section className="catalogue-grid">
-            {filteredFilms.map((film) => <FilmCard key={film.id} film={film} saved={savedFilms.includes(film.id)} onSave={() => toggleSaved(film.id)} onOpen={() => setSelectedFilm(film)} />)}
-            {filteredFilms.length === 0 && <div className="empty-state"><MagnifyingGlass size={26} /><strong>Aucun film trouvé</strong><span>Essayez un autre titre ou un autre genre.</span></div>}
+            {loading && <div className="empty-state"><strong>Chargement du catalogue…</strong><span>Lecture des films FilmBox.</span></div>}
+            {!loading && films.map((film) => <FilmCard key={film.id} film={film} saved={savedFilms.includes(film.id)} onSave={() => toggleSaved(film.id)} onOpen={() => setSelectedFilm(film)} />)}
+            {!loading && films.length === 0 && <div className="empty-state"><MagnifyingGlass size={26} /><strong>Aucun film trouvé</strong><span>Essayez un autre titre ou un autre genre.</span></div>}
           </section>
 
           <section className="bottom-grid">

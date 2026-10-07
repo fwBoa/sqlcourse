@@ -49,6 +49,22 @@ CREATE TABLE journal (
     date_visionnage DATE    NOT NULL
 );
 
+CREATE TABLE listes (
+    id             INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    utilisateur_id INTEGER NOT NULL REFERENCES utilisateurs(id),
+    titre          VARCHAR(100) NOT NULL,
+    publique       BOOLEAN NOT NULL DEFAULT false,
+    creee_le       DATE NOT NULL DEFAULT CURRENT_DATE,
+    UNIQUE (utilisateur_id, titre)
+);
+
+CREATE TABLE liste_films (
+    liste_id INTEGER NOT NULL REFERENCES listes(id) ON DELETE CASCADE,
+    film_id  INTEGER NOT NULL REFERENCES films(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL CHECK (position > 0),
+    PRIMARY KEY (liste_id, film_id)
+);
+
 INSERT INTO sagas (nom) VALUES ('Retour vers le futur'), ('The Dark Knight'), ('X-Men : la prélogie');
 
 INSERT INTO films (titre, annee, genre, saga_id) VALUES
